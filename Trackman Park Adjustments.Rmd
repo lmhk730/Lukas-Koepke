@@ -1,0 +1,385 @@
+---
+title: "Trackman Park Adjustments"
+author: "Lukas Koepke"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+##Packages
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(lme4)
+library(data.table)
+```
+
+##Load Dataset
+```{r}
+park_factors_df <- read.csv(file.choose())
+```
+
+##Average Values by Venue ID
+```{r}
+###Drop all Rows with NA values
+park_factors_df <- park_factors_df %>% drop_na()
+
+park_factors_df %>% 
+  group_by(venueid) %>% 
+  summarize(num_rows = n(), rel_speed = mean(tm_rel_speed), spin_rate = mean(tm_spin_rate), 
+            spin_axis = mean(tm_spin_axis), vert_rel_angle = mean(tm_vert_rel_angle), 
+            horz_rel_angle = mean(tm_horz_rel_angle), rel_height = mean(tm_rel_height), rel_side = mean(tm_rel_side),
+            extension = mean(tm_extension), vert_break = mean(tm_induced_vert_break), horz_break = mean(tm_horz_break),
+            px = mean(px), pz = mean(pz)) %>% 
+  ungroup()
+```
+
+##Park Adjustment Lmer Model Creation {.tabset}
+###Release Speed
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_rel_speed_reg <- lmer(tm_rel_speed ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_rel_speed_adj <- ranef(tm_rel_speed_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_rel_speed_adj, keep.rownames = 'venueid')
+tm_rel_speed_adj <- tm_rel_speed_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_rel_speed_adj$venueid <- strtoi(tm_rel_speed_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_rel_speed_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_rel_speed = tm_rel_speed + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+
+###For whatever reason this code refused to run, kept running out of allocated memory
+#park_factors_df <- park_factors_df %>% 
+#  inner_join(park_factors_df, tm_rel_speed_adj, by = 'venueid') %>% 
+#  mutate(tm_rel_speed = tm_rel_speed + intercept)
+```
+
+###Spin Rate
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_spin_rate_reg <- lmer(tm_spin_rate ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_spin_rate_adj <- ranef(tm_spin_rate_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_spin_rate_adj, keep.rownames = 'venueid')
+tm_spin_rate_adj <- tm_spin_rate_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_spin_rate_adj$venueid <- strtoi(tm_spin_rate_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_spin_rate_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_spin_rate = tm_spin_rate + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Spin Axis
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_spin_axis_reg <- lmer(tm_spin_axis ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_spin_axis_adj <- ranef(tm_spin_axis_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_spin_axis_adj, keep.rownames = 'venueid')
+tm_spin_axis_adj <- tm_spin_axis_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_spin_axis_adj$venueid <- strtoi(tm_spin_axis_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_spin_axis_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_spin_axis = tm_spin_axis + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Vertical Release Angle
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_vert_rel_angle_reg <- lmer(tm_vert_rel_angle ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_vert_rel_angle_adj <- ranef(tm_vert_rel_angle_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_vert_rel_angle_adj, keep.rownames = 'venueid')
+tm_vert_rel_angle_adj <- tm_vert_rel_angle_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_vert_rel_angle_adj$venueid <- strtoi(tm_vert_rel_angle_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_vert_rel_angle_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_vert_rel_angle = tm_vert_rel_angle + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Horizontal Release Angle
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_horz_rel_angle_reg <- lmer(tm_horz_rel_angle ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_horz_rel_angle_adj <- ranef(tm_horz_rel_angle_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_horz_rel_angle_adj, keep.rownames = 'venueid')
+tm_horz_rel_angle_adj <- tm_horz_rel_angle_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_horz_rel_angle_adj$venueid <- strtoi(tm_horz_rel_angle_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_horz_rel_angle_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_horz_rel_angle = tm_horz_rel_angle + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Release Height
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_rel_height_reg <- lmer(tm_rel_height ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_rel_height_adj <- ranef(tm_rel_height_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_rel_height_adj, keep.rownames = 'venueid')
+tm_rel_height_adj <- tm_rel_height_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_rel_height_adj$venueid <- strtoi(tm_rel_height_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_rel_height_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_rel_height = tm_rel_height + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Release Side
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_rel_side_reg <- lmer(tm_rel_side ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_rel_side_adj <- ranef(tm_rel_side_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_rel_side_adj, keep.rownames = 'venueid')
+tm_rel_side_adj <- tm_rel_side_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_rel_side_adj$venueid <- strtoi(tm_rel_side_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_rel_side_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_rel_side = tm_rel_side + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Extension
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_extension_reg <- lmer(tm_extension ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_extension_adj <- ranef(tm_extension_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_extension_adj, keep.rownames = 'venueid')
+tm_extension_adj <- tm_extension_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_extension_adj$venueid <- strtoi(tm_extension_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_extension_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_extension = tm_extension + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Vertical Break
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_induced_vert_break_reg <- lmer(tm_induced_vert_break ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_induced_vert_break_adj <- ranef(tm_induced_vert_break_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_induced_vert_break_adj, keep.rownames = 'venueid')
+tm_induced_vert_break_adj <- tm_induced_vert_break_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_induced_vert_break_adj$venueid <- strtoi(tm_induced_vert_break_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_induced_vert_break_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_induced_vert_break = tm_induced_vert_break + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Horizontal Break
+```{r}
+###Include Random Effects for Pitcher and Venue
+tm_horz_break_reg <- lmer(tm_horz_break ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+tm_horz_break_adj <- ranef(tm_horz_break_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(tm_horz_break_adj, keep.rownames = 'venueid')
+tm_horz_break_adj <- tm_horz_break_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+tm_horz_break_adj$venueid <- strtoi(tm_horz_break_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = tm_horz_break_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(tm_horz_break = tm_horz_break + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Plate-x
+```{r}
+###Include Random Effects for Pitcher and Venue
+px_reg <- lmer(px ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+px_adj <- ranef(px_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(px_adj, keep.rownames = 'venueid')
+px_adj <- px_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+px_adj$venueid <- strtoi(px_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = px_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(px = px + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+###Plate-z
+```{r}
+###Include Random Effects for Pitcher and Venue
+pz_reg <- lmer(pz ~ (1|venueid) + (1|pitcherid), data = park_factors_df)
+
+###Extract Random Effects, Multiply by -1
+pz_adj <- ranef(pz_reg)$venueid*-1
+
+###Make Rownames a Column
+setDT(pz_adj, keep.rownames = 'venueid')
+pz_adj <- pz_adj %>%
+  rename(intercept = `(Intercept)`)
+
+###Change Row Names to Int
+pz_adj$venueid <- strtoi(pz_adj$venueid)
+
+###Merge Dataframes to include intercepts
+park_factors_df <- merge(x = park_factors_df, y = pz_adj, by = "venueid", all.x = TRUE, all.y = TRUE)
+
+###Add Intercepts
+park_factors_df <- park_factors_df %>%
+  mutate(pz = pz + intercept)
+
+###Get Rid of Intercept Column
+park_factors_df <- park_factors_df %>%
+  select(X, venueid, pitcherid, tm_rel_speed, tm_spin_rate, tm_spin_axis, tm_vert_rel_angle, tm_horz_rel_angle, tm_rel_height, tm_rel_side, tm_extension, tm_induced_vert_break, tm_horz_break, px, pz)
+```
+
+##View Park Adjusted Data Frame (Head)
+```{r}
+print.data.frame(head(park_factors_df))
+```
+
